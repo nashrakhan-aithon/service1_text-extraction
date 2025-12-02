@@ -1,0 +1,83 @@
+# Service 1: Complete Standalone Docker Compose
+# =============================================
+# This docker-compose file creates a complete standalone Service 1
+# that can be distributed and run on any system.
+#
+# Usage:
+#   docker-compose -f docker-compose-standalone.yml up -d
+#
+# This includes:
+#   - Service 1 API (port 8015)
+#   - Service 1 Database (port 5433)
+#   - All dependencies
+
+services:
+  # Service 1 API
+  service1-api:
+    build:
+      context: .  # Build from package root (self-contained)
+      dockerfile: Dockerfile
+    container_name: service1-api
+    ports:
+      - "8015:8015"
+    environment:
+      - G_POSTGRES_SERVICE1_HOST=postgres-service1
+      - G_POSTGRES_SERVICE1_PORT=5432
+      - G_POSTGRES_SERVICE1_USER=postgres
+      - G_POSTGRES_SERVICE1_PASSWORD=postgres
+      - G_POSTGRES_SERVICE1_DATABASE=fcr001-text-extraction
+      - G_SERVICE1_OUTPUT_FOLDER=s3://longformextracteddata/datalake
+      - G_AITHON_DATALAKE=/app/datalake
+      - SERVICE1_PORT=8015
+      
+    volumes:
+      - service1-output:/app/output
+      - service1-datalake:/app/datalake
+      - C:/Users/NashraKhan/Desktop/project/doc-classify/service1-output:/app/output
+    depends_on:
+      postgres-service1:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - service1-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8015/api/document-text-extraction/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Service 1 Database
+  postgres-service1:
+    image: pgvector/pgvector:pg13
+    container_name: postgres-service1-standalone
+    environment:
+      POSTGRES_DB: fcr001-text-extraction
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    ports:
+      - "5433:5432"
+    volumes:
+      - service1-db-data:/var/lib/postgresql/data
+      - ./database/schemas/document_text_extraction:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d fcr001-text-extraction"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - service1-network
+
+volumes:
+  service1-db-data:
+    driver: local
+  service1-output:
+    driver: local
+  service1-datalake:
+    driver: local
+
+networks:
+  service1-network:
+    driver: bridge
+

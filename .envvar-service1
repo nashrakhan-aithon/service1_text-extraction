@@ -1,0 +1,54 @@
+# Service 1: Document Text Extraction - COMPLETELY SEPARATE CONFIGURATION
+# ========================================================================
+# This is a standalone configuration file for Service 1.
+# Service 1 does NOT depend on the main .envvar file or any other services.
+#
+# Date: 2025-11-19
+# Status: Standalone Service 1 Configuration
+
+[COMMON]
+# Datalake path (for reading source PDFs - can be same as main system)
+G_AITHON_DATALAKE=~/projects/aithon/aithon_output/datalake-fcr001
+
+# Service 1 Output Folder - Where extracted .md files are saved (SEPARATE from datalake)
+G_SERVICE1_OUTPUT_FOLDER=s3://longformextracteddata/datalake
+
+# Default PDF password (if needed)
+# Updated to match current environment defaults
+G_DEFAULT_PDF_PWD=122369490
+
+# Service 2 Integration (Document Embedding & Classification)
+# Service 2 will be called automatically after successful text extraction
+# Note: Use host.docker.internal on Windows/Mac to reach host services from container
+#       Use the actual host IP or service name on Linux
+G_SERVICE2_BASE_URL=http://host.docker.internal:8006
+G_SERVICE2_ENDPOINT=/api/document-embedding-classification/process
+G_SERVICE2_ENABLED=true
+G_SERVICE2_TIMEOUT=30
+
+# Application log folder
+G_AITHON_APPLOGFOLDER=~/projects/aithon/aithon_output/applogs
+
+[POSTGRES_SERVICE1]
+# Service 1 Database Configuration
+# Completely separate database container for Service 1
+# Uses different port (5433) to avoid conflict with main container
+G_POSTGRES_SERVICE1_HOST=localhost
+G_POSTGRES_SERVICE1_PORT=5433
+G_POSTGRES_SERVICE1_USER=postgres
+G_POSTGRES_SERVICE1_PASSWORD=postgres
+G_POSTGRES_SERVICE1_DATABASE=fcr001-text-extraction
+
+[SERVICE1]
+# Service 1 Specific Settings
+G_SERVICE1_NAME=Document Text Extraction Service
+G_SERVICE1_VERSION=1.0.0
+G_SERVICE1_MAX_WORKERS=4
+G_SERVICE1_MAX_PAGES=None
+G_SERVICE1_MIN_TEXT_LENGTH=250
+
+# Extraction engine settings
+G_TEXT_EXTRACTION_ENGINE=tesseract
+G_USE_OCR=true
+G_OCR_LANGUAGE=eng
+G_OCR_TIMEOUT=300

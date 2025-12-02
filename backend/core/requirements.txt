@@ -1,0 +1,20 @@
+# Core dependencies for backend.core library
+psycopg2-binary>=2.9.0
+python-dotenv>=1.0.0
+configparser>=5.0.0
+
+# Optional dependencies for different modes
+# API mode support
+httpx>=0.25.0  # For API mode HTTP client
+
+# PDF processing (moved from backend)
+PyMuPDF>=1.23.0  # For PDF text extraction
+Pillow>=10.0.0   # For image processing
+pytesseract>=0.3.0  # For OCR functionality
+
+# AI utilities
+openai>=1.0.0    # For OpenAI API interactions
+
+# Development dependencies (optional)
+# pytest>=7.0.0
+# pytest-asyncio>=0.21.0
